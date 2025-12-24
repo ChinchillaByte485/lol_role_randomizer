@@ -3,206 +3,373 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LoL ロールランダマイザー</title>
+  <title>LoL Role Randomizer | Hextech Edition</title>
   <link rel="icon" href="favicon.ico" type="image/x-icon">
   <style>
+    :root {
+      --hextech-gold: #c8aa6e;
+      --hextech-gold-dark: #785a28;
+      --hextech-blue: #0080ff;
+      --dark-bg: #010a13;
+      --card-bg: rgba(30, 35, 40, 0.9);
+      --input-bg: #091428;
+      --text-color: #f0e6d2;
+    }
+
     body {
-      font-family: Arial, sans-serif;
+      font-family: 'Beaufort for LoL', Arial, sans-serif;
+      background-color: var(--dark-bg);
+      background-image: radial-gradient(circle at center, #0a1428 0%, #010a13 100%);
+      color: var(--text-color);
+      margin: 0;
       padding: 20px;
-      max-width: 800px;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 900px;
       margin: auto;
     }
+
     h1 {
       text-align: center;
+      color: var(--hextech-gold);
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      border-bottom: 2px solid var(--hextech-gold-dark);
+      padding-bottom: 10px;
+      margin-bottom: 30px;
+      text-shadow: 0 0 10px rgba(200, 170, 110, 0.5);
     }
-    .player-inputs {
+
+    .config-section {
+      background: var(--card-bg);
+      border: 1px solid var(--hextech-gold-dark);
+      padding: 20px;
+      border-radius: 4px;
       margin-bottom: 20px;
     }
-    .player {
-      margin: 10px 0;
+
+    .player-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 15px;
+      margin-bottom: 20px;
     }
-    .results, .history {
-      margin-top: 20px;
+
+    .player-card {
+      background: var(--input-bg);
+      border-left: 3px solid var(--hextech-blue);
+      padding: 15px;
+      border-radius: 4px;
+      transition: transform 0.2s;
     }
-    .player-result, .history-entry {
-      background-color: #f0f0f0;
-      padding: 10px;
+
+    .player-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(0, 128, 255, 0.2);
+    }
+
+    label {
+      display: block;
+      font-size: 0.8rem;
+      color: var(--hextech-gold);
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+
+    input, select {
+      width: 100%;
+      background: #1e2328;
+      border: 1px solid var(--hextech-gold-dark);
+      color: #cdbe91;
+      padding: 8px;
+      box-sizing: border-box;
       margin-bottom: 10px;
-      border-radius: 5px;
     }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: var(--hextech-blue);
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
     button {
-      margin-top: 10px;
-      padding: 8px 16px;
-      font-size: 16px;
+      background: var(--hextech-gold-dark);
+      color: white;
+      border: 1px solid var(--hextech-gold);
+      padding: 12px 24px;
+      font-weight: bold;
+      text-transform: uppercase;
       cursor: pointer;
+      transition: all 0.3s;
+      min-width: 150px;
     }
+
+    button:hover {
+      background: var(--hextech-gold);
+      color: var(--dark-bg);
+      box-shadow: 0 0 15px rgba(200, 170, 110, 0.6);
+    }
+
+    button#assignButton {
+      background: linear-gradient(to bottom, #1e2328, #005a82);
+      border-color: var(--hextech-blue);
+    }
+
+    button#assignButton:hover {
+      background: var(--hextech-blue);
+      color: white;
+    }
+
+    .results {
+      margin-top: 30px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 10px;
+    }
+
+    .player-result {
+      background: linear-gradient(135deg, #1e2328 0%, #091428 100%);
+      border: 1px solid var(--hextech-gold-dark);
+      padding: 15px;
+      text-align: center;
+      border-radius: 4px;
+      animation: fadeIn 0.5s ease-out forwards;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .role-badge {
+      display: block;
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: var(--hextech-blue);
+      margin: 5px 0;
+    }
+
+    .sub-role {
+      font-size: 0.8rem;
+      color: #888;
+    }
+
     textarea {
       width: 100%;
-      height: 80px;
+      height: 60px;
+      margin-top: 20px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px dashed var(--hextech-gold-dark);
+      color: #888;
+      padding: 10px;
+      resize: none;
+      font-size: 0.8rem;
+    }
+
+    .history {
+      margin-top: 40px;
+      border-top: 1px solid var(--hextech-gold-dark);
+      padding-top: 20px;
+    }
+
+    .history-entry {
+      font-size: 0.85rem;
+      color: #a0a0a0;
+      padding: 10px;
+      border-bottom: 1px solid #1e2328;
     }
   </style>
 </head>
 <body>
-  <h1>LoL ロールランダマイザー</h1>
 
-  <label for="playerCount">プレイヤー人数（1〜5人）:</label>
-  <select id="playerCount">
-    <option value="1">1</option>
-    <option value="2">2</option>
-    <option value="3">3</option>
-    <option value="4">4</option>
-    <option value="5" selected>5</option>
-  </select>
+<div class="container">
+  <h1>LoL Role Randomizer</h1>
 
-  <div class="player-inputs" id="playerInputs"></div>
+  <div class="config-section">
+    <div style="margin-bottom: 20px; text-align: center;">
+      <label for="playerCount">PARTY SIZE</label>
+      <select id="playerCount" style="width: auto; padding: 5px 20px;">
+        <option value="1">1 PLAYER</option>
+        <option value="2">2 PLAYERS</option>
+        <option value="3">3 PLAYERS</option>
+        <option value="4">4 PLAYERS</option>
+        <option value="5" selected>5 PLAYERS</option>
+      </select>
+    </div>
 
-  <button id="assignButton" onclick="assignRoles()">ロールを決める</button>
-  <button onclick="copyResults()">結果をコピー</button>
-  <button onclick="clearHistory()">履歴をクリア</button>
+    <div class="player-grid" id="playerInputs"></div>
 
-  <div class="results" id="results"></div>
-  <textarea id="resultText" readonly></textarea>
-
-  <div class="history" id="history">
-    <h3>履歴</h3>
+    <div class="button-group">
+      <button id="assignButton" onclick="assignRoles()">ロールを決定</button>
+      <button onclick="copyResults()">結果をコピー</button>
+      <button onclick="clearHistory()">履歴リセット</button>
+    </div>
   </div>
 
-  <script>
-    const roles = ['TOP', 'JG', 'MID', 'ADC', 'SUP'];
-    let history = [];
+  <div class="results" id="results"></div>
+  <textarea id="resultText" readonly placeholder="結果がここに表示されます"></textarea>
 
-    function createInputs(count) {
-      const container = document.getElementById('playerInputs');
-      container.innerHTML = '';
-      for (let i = 0; i < count; i++) {
-        const div = document.createElement('div');
-        div.className = 'player';
-        div.innerHTML = `
-          プレイヤー${i + 1}: 
-          <input type="text" placeholder="名前" id="player-${i}" />
-          固定ロール: 
-          <select id="fixed-${i}">
-            <option value="">ランダム</option>
-            ${roles.map(r => `<option value="${r}">${r}</option>`).join('')}
-          </select>
-          除外ロール: 
-          <select id="exclude-${i}">
-            <option value="">なし</option>
-            ${roles.map(r => `<option value="${r}">${r}</option>`).join('')}
-          </select>
-        `;
-        container.appendChild(div);
-      }
+  <div class="history" id="history">
+    <h3 style="color: var(--hextech-gold);">HISTORY</h3>
+    <div id="historyList"></div>
+  </div>
+</div>
+
+<script>
+  const roles = ['TOP', 'JG', 'MID', 'ADC', 'SUP'];
+  let historyData = [];
+
+  function createInputs(count) {
+    const container = document.getElementById('playerInputs');
+    container.innerHTML = '';
+    for (let i = 0; i < count; i++) {
+      const div = document.createElement('div');
+      div.className = 'player-card';
+      div.innerHTML = `
+        <label>PLAYER ${i + 1}</label>
+        <input type="text" placeholder="名前を入力" id="player-${i}" />
+        <div style="display:flex; gap:5px;">
+          <div style="flex:1">
+            <label>固定</label>
+            <select id="fixed-${i}">
+              <option value="">ランダム</option>
+              ${roles.map(r => `<option value="${r}">${r}</option>`).join('')}
+            </select>
+          </div>
+          <div style="flex:1">
+            <label>除外</label>
+            <select id="exclude-${i}">
+              <option value="">なし</option>
+              ${roles.map(r => `<option value="${r}">${r}</option>`).join('')}
+            </select>
+          </div>
+        </div>
+      `;
+      container.appendChild(div);
+    }
+  }
+
+  function getRandomSubrole(exclude, subExcludes) {
+    const subOptions = roles.filter(r => r !== exclude && !subExcludes.includes(r));
+    return subOptions[Math.floor(Math.random() * subOptions.length)];
+  }
+
+  function assignRoles() {
+    const count = parseInt(document.getElementById('playerCount').value);
+    const results = [];
+    const names = [];
+    const fixedRoles = [];
+    const excludeRoles = [];
+
+    for (let i = 0; i < count; i++) {
+      const name = document.getElementById(`player-${i}`).value.trim() || `PLAYER ${i + 1}`;
+      const fixed = document.getElementById(`fixed-${i}`).value;
+      const exclude = document.getElementById(`exclude-${i}`).value;
+      names.push(name);
+      fixedRoles.push(fixed);
+      excludeRoles.push(exclude);
     }
 
-    function getRandomSubrole(exclude, subExcludes) {
-      const subOptions = roles.filter(r => r !== exclude && !subExcludes.includes(r));
-      return subOptions[Math.floor(Math.random() * subOptions.length)];
-    }
+    let availableRoles = [...roles];
+    const mainRoles = Array(count).fill(null);
 
-    function assignRoles() {
-      const count = parseInt(document.getElementById('playerCount').value);
-      const results = [];
-      const names = [];
-      const fixedRoles = [];
-      const excludeRoles = [];
-
-      for (let i = 0; i < count; i++) {
-        const name = document.getElementById(`player-${i}`).value.trim() || `プレイヤー${i + 1}`;
-        const fixed = document.getElementById(`fixed-${i}`).value;
-        const exclude = document.getElementById(`exclude-${i}`).value;
-        names.push(name);
-        fixedRoles.push(fixed);
-        excludeRoles.push(exclude);
-      }
-
-      let availableRoles = [...roles];
-      const mainRoles = [];
-
-      for (let i = 0; i < count; i++) {
-        let main;
-        if (fixedRoles[i]) {
-          if (!availableRoles.includes(fixedRoles[i])) {
-            alert(`${names[i]}の固定ロール「${fixedRoles[i]}」は既に使用されています。`);
-            return;
-          }
-          main = fixedRoles[i];
-        } else {
-          let filtered = availableRoles.filter(r => r !== excludeRoles[i] && !fixedRoles.includes(r));
-          if (filtered.length === 0) {
-            alert("利用可能なロールが不足しています。固定・除外設定を見直してください。");
-            return;
-          }
-          const index = Math.floor(Math.random() * filtered.length);
-          main = filtered[index];
+    // 1. 固定ロールを先に割り当て
+    for (let i = 0; i < count; i++) {
+      if (fixedRoles[i]) {
+        if (!availableRoles.includes(fixedRoles[i])) {
+          alert(`エラー: ${fixedRoles[i]} が重複しています。`);
+          return;
         }
-        availableRoles = availableRoles.filter(r => r !== main);
-        mainRoles.push(main);
+        mainRoles[i] = fixedRoles[i];
+        availableRoles = availableRoles.filter(r => r !== fixedRoles[i]);
       }
+    }
 
-      for (let i = 0; i < count; i++) {
-        const sub = getRandomSubrole(mainRoles[i], [excludeRoles[i]]);
-        results.push({ name: names[i], main: mainRoles[i], sub });
+    // 2. 残りのロールを割り当て
+    for (let i = 0; i < count; i++) {
+      if (!mainRoles[i]) {
+        let filtered = availableRoles.filter(r => r !== excludeRoles[i]);
+        if (filtered.length === 0) {
+          alert("条件に合うロールが見つかりません。設定を見直してください。");
+          return;
+        }
+        const index = Math.floor(Math.random() * filtered.length);
+        const selected = filtered[index];
+        mainRoles[i] = selected;
+        availableRoles = availableRoles.filter(r => r !== selected);
       }
-
-      displayResults(results);
-      history.push(results);
-      updateHistory();
-      updateButtonLabel();
     }
 
-    function displayResults(results) {
-      const container = document.getElementById('results');
-      const resultText = document.getElementById('resultText');
-      container.innerHTML = '';
-      let text = '';
-      results.forEach(res => {
-        const div = document.createElement('div');
-        div.className = 'player-result';
-        div.innerHTML = `<strong>${res.name}</strong>: メインロール - ${res.main} / サブロール - ${res.sub}`;
-        container.appendChild(div);
-        text += `${res.name}: メイン - ${res.main} / サブ - ${res.sub}\n`;
-      });
-      resultText.value = text.trim();
+    for (let i = 0; i < count; i++) {
+      const sub = getRandomSubrole(mainRoles[i], [excludeRoles[i]]);
+      results.push({ name: names[i], main: mainRoles[i], sub });
     }
 
-    function copyResults() {
-      const resultText = document.getElementById('resultText');
-      resultText.select();
-      document.execCommand('copy');
-      alert("結果をコピーしました！");
-    }
+    displayResults(results);
+    historyData.push(results);
+    updateHistory();
+  }
 
-    function clearHistory() {
-      history = [];
-      updateHistory();
-      updateButtonLabel();
-    }
-
-    function updateHistory() {
-      const container = document.getElementById('history');
-      container.innerHTML = '<h3>履歴</h3>';
-      history.slice().reverse().forEach((entry, index) => {
-        const div = document.createElement('div');
-        div.className = 'history-entry';
-        div.innerHTML = `<strong>${history.length - index}回目</strong><br>` +
-          entry.map(res => `${res.name}: メイン - ${res.main} / サブ - ${res.sub}`).join('<br>');
-        container.appendChild(div);
-      });
-    }
-
-    function updateButtonLabel() {
-      const assignButton = document.getElementById('assignButton');
-      assignButton.textContent = history.length >= 1 ? 'もう一度ロールを決める' : 'ロールを決める';
-    }
-
-    document.getElementById('playerCount').addEventListener('change', (e) => {
-      createInputs(parseInt(e.target.value));
+  function displayResults(results) {
+    const container = document.getElementById('results');
+    const resultText = document.getElementById('resultText');
+    container.innerHTML = '';
+    let text = '';
+    results.forEach((res, index) => {
+      const div = document.createElement('div');
+      div.className = 'player-result';
+      div.style.animationDelay = `${index * 0.1}s`;
+      div.innerHTML = `
+        <div style="font-size:0.9rem; color:var(--hextech-gold)">${res.name}</div>
+        <div class="role-badge">${res.main}</div>
+        <div class="sub-role">SUB: ${res.sub}</div>
+      `;
+      container.appendChild(div);
+      text += `${res.name}: ${res.main} (Sub: ${res.sub})\n`;
     });
+    resultText.value = text.trim();
+  }
 
-    // 初期表示
-    createInputs(5);
-    updateButtonLabel();
-  </script>
+  function copyResults() {
+    const resultText = document.getElementById('resultText');
+    if (!resultText.value) return;
+    resultText.select();
+    document.execCommand('copy');
+    alert("Copied to clipboard!");
+  }
+
+  function clearHistory() {
+    historyData = [];
+    updateHistory();
+  }
+
+  function updateHistory() {
+    const container = document.getElementById('historyList');
+    container.innerHTML = '';
+    historyData.slice().reverse().forEach((entry, index) => {
+      const div = document.createElement('div');
+      div.className = 'history-entry';
+      div.innerHTML = `<strong>#${historyData.length - index}</strong> - ` +
+        entry.map(res => `${res.name}: ${res.main}`).join(' | ');
+      container.appendChild(div);
+    });
+  }
+
+  document.getElementById('playerCount').addEventListener('change', (e) => {
+    createInputs(parseInt(e.target.value));
+  });
+
+  // 初期化
+  createInputs(5);
+</script>
+
 </body>
 </html>
