@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LoL ロールランダマイザー</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      max-width: 800px;
+      margin: auto;
+    }
+    h1 {
+      text-align: center;
+    }
+    .player-inputs {
+      margin-bottom: 20px;
+    }
+    .player {
+      margin: 10px 0;
+    }
+    .results, .history {
+      margin-top: 20px;
+    }
+    .player-result, .history-entry {
+      background-color: #f0f0f0;
+      padding: 10px;
+      margin-bottom: 10px;
+      border-radius: 5px;
+    }
+    button {
+      margin-top: 10px;
+      padding: 8px 16px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    textarea {
+      width: 100%;
+      height: 80px;
+    }
+  </style>
+</head>
+<body>
+  <h1>LoL ロールランダマイザー</h1>
+
+  <label for="playerCount">プレイヤー人数（1〜5人）:</label>
+  <select id="playerCount">
+    <option value="1">1</option>
+    <option value="2">2</option>
+    <option value="3">3</option>
+    <option value="4">4</option>
+    <option value="5" selected>5</option>
+  </select>
+
+  <div class="player-inputs" id="playerInputs"></div>
+
+  <button id="assignButton" onclick="assignRoles()">ロールを決める</button>
+  <button onclick="copyResults()">結果をコピー</button>
+  <button onclick="clearHistory()">履歴をクリア</button>
+
+  <div class="results" id="results"></div>
+  <textarea id="resultText" readonly></textarea>
+
+  <div class="history" id="history">
+    <h3>履歴</h3>
+  </div>
+
+  <script>
+    const roles = ['TOP', 'JG', 'MID', 'ADC', 'SUP'];
+    let history = [];
+
+    function createInputs(count) {
+      const container = document.getElementById('playerInputs');
+      container.innerHTML = '';
+      for (let i = 0; i < count; i++) {
+        const div = document.createElement('div');
+        div.className = 'player';
+        div.innerHTML = `
+          プレイヤー${i + 1}: 
+          <input type="text" placeholder="名前" id="player-${i}" />
+          固定ロール: 
+          <select id="fixed-${i}">
+            <option value="">ランダム</option>
+            ${roles.map(r => `<option value="${r}">${r}</option>`).join('')}
+          </select>
+          除外ロール: 
+          <select id="exclude-${i}">
+            <option value="">なし</option>
+            ${roles.map(r => `<option value="${r}">${r}</option>`).join('')}
+          </select>
+        `;
+        container.appendChild(div);
+      }
+    }
+
+    function getRandomSubrole(exclude, subExcludes) {
+      const subOptions = roles.filter(r => r !== exclude && !subExcludes.includes(r));
+      return subOptions[Math.floor(Math.random() * subOptions.length)];
+    }
+
+    function assignRoles() {
+      const count = parseInt(document.getElementById('playerCount').value);
+      const results = [];
+      const names = [];
+      const fixedRoles = [];
+      const excludeRoles = [];
+
+      for (let i = 0; i < count; i++) {
+        const name = document.getElementById(`player-${i}`).value.trim() || `プレイヤー${i + 1}`;
+        const fixed = document.getElementById(`fixed-${i}`).value;
+        const exclude = document.getElementById(`exclude-${i}`).value;
+        names.push(name);
+        fixedRoles.push(fixed);
+        excludeRoles.push(exclude);
+      }
+
+      let availableRoles = [...roles];
+      const mainRoles = [];
+
+      for (let i = 0; i < count; i++) {
+        let main;
+        if (fixedRoles[i]) {
+          if (!availableRoles.includes(fixedRoles[i])) {
+            alert(`${names[i]}の固定ロール「${fixedRoles[i]}」は既に使用されています。`);
+            return;
+          }
+          main = fixedRoles[i];
+        } else {
+          let filtered = availableRoles.filter(r => r !== excludeRoles[i] && !fixedRoles.includes(r));
+          if (filtered.length === 0) {
+            alert("利用可能なロールが不足しています。固定・除外設定を見直してください。");
+            return;
+          }
+          const index = Math.floor(Math.random() * filtered.length);
+          main = filtered[index];
+        }
+        availableRoles = availableRoles.filter(r => r !== main);
+        mainRoles.push(main);
+      }
+
+      for (let i = 0; i < count; i++) {
+        const sub = getRandomSubrole(mainRoles[i], [excludeRoles[i]]);
+        results.push({ name: names[i], main: mainRoles[i], sub });
+      }
+
+      displayResults(results);
+      history.push(results);
+      updateHistory();
+      updateButtonLabel();
+    }
+
+    function displayResults(results) {
+      const container = document.getElementById('results');
+      const resultText = document.getElementById('resultText');
+      container.innerHTML = '';
+      let text = '';
+      results.forEach(res => {
+        const div = document.createElement('div');
+        div.className = 'player-result';
+        div.innerHTML = `<strong>${res.name}</strong>: メインロール - ${res.main} / サブロール - ${res.sub}`;
+        container.appendChild(div);
+        text += `${res.name}: メイン - ${res.main} / サブ - ${res.sub}\n`;
+      });
+      resultText.value = text.trim();
+    }
+
+    function copyResults() {
+      const resultText = document.getElementById('resultText');
+      resultText.select();
+      document.execCommand('copy');
+      alert("結果をコピーしました！");
+    }
+
+    function clearHistory() {
+      history = [];
+      updateHistory();
+      updateButtonLabel();
+    }
+
+    function updateHistory() {
+      const container = document.getElementById('history');
+      container.innerHTML = '<h3>履歴</h3>';
+      history.slice().reverse().forEach((entry, index) => {
+        const div = document.createElement('div');
+        div.className = 'history-entry';
+        div.innerHTML = `<strong>${history.length - index}回目</strong><br>` +
+          entry.map(res => `${res.name}: メイン - ${res.main} / サブ - ${res.sub}`).join('<br>');
+        container.appendChild(div);
+      });
+    }
+
+    function updateButtonLabel() {
+      const assignButton = document.getElementById('assignButton');
+      assignButton.textContent = history.length >= 1 ? 'もう一度ロールを決める' : 'ロールを決める';
+    }
+
+    document.getElementById('playerCount').addEventListener('change', (e) => {
+      createInputs(parseInt(e.target.value));
+    });
+
+    // 初期表示
+    createInputs(5);
+    updateButtonLabel();
+  </script>
+</body>
+</html>
